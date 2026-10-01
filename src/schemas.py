@@ -18,10 +18,20 @@ class EvaluateRequest(BaseModel):
 
 
 class TrainRequest(BaseModel):
-    mode: Literal["peft", "full"] = "peft"
-    max_steps: int = Field(default=1000, ge=1, le=10_000)
-    per_device_train_batch_size: int = Field(default=4, ge=1, le=32)
-    learning_rate: float = Field(default=1e-4, gt=0)
+    mode: Literal["peft", "full"] = "full"
+    max_steps: int | None = Field(
+        default=None,
+        ge=1,
+        le=20_000,
+        description="Если не задано — учим NUM_TRAIN_EPOCHS эпох (~2 на сбалансированном train)",
+    )
+    num_train_epochs: float = Field(default=2, gt=0, le=10)
+    per_device_train_batch_size: int = Field(default=8, ge=1, le=32)
+    learning_rate: float | None = Field(
+        default=None,
+        gt=0,
+        description="По умолчанию 2e-5 для full, 1e-4 для peft",
+    )
     output_dir: str | None = Field(
         default=None,
         description="Куда сохранить веса. По умолчанию SFT_OUTPUT_PEFT или SFT_OUTPUT",

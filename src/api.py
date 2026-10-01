@@ -69,6 +69,7 @@ def start_training(request: TrainRequest) -> dict:
     return training_service.start(
         mode=request.mode,
         max_steps=request.max_steps,
+        num_train_epochs=request.num_train_epochs,
         per_device_train_batch_size=request.per_device_train_batch_size,
         learning_rate=request.learning_rate,
         output_dir=request.output_dir,

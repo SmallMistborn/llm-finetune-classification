@@ -1,10 +1,17 @@
+# Torch ставь отдельно — CPU/MPS и CUDA это разные колёса.
+# Mac/CPU:  pip install torch==2.12.0
+# NVIDIA:   pip install torch==2.12.0 --index-url https://download.pytorch.org/whl/cu124
+# затем:    pip install -r requirements.txt
+
 accelerate==1.14.0
 datasets==5.0.0
 fastapi==0.128.8
+huggingface_hub==1.19.0
 peft==0.19.1
+protobuf==6.33.6
 python-dotenv==1.2.2
 scikit-learn==1.9.0
-torch==2.12.0
+sentencepiece==0.2.1
 transformers==5.12.1
 trl==1.6.0
 uvicorn[standard]==0.40.0

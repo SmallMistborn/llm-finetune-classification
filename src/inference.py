@@ -4,34 +4,49 @@ import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from config import BASE_MODEL
+from config import BASE_MODEL, HF_TOKEN
 from formatting_func import LABELS, build_prompt
+
+
+def _hub_kwargs() -> dict:
+    return {"token": HF_TOKEN} if HF_TOKEN else {}
+
+
+def _infer_dtype():
+    if torch.cuda.is_available():
+        return torch.bfloat16
+    if torch.backends.mps.is_available():
+        return torch.float16
+    return torch.float32
 
 
 def load_model(model_path: str):
     path = Path(model_path)
+    dtype = _infer_dtype()
+    hub = _hub_kwargs()
 
     if (path / "adapter_config.json").exists():
         base_model = AutoModelForCausalLM.from_pretrained(
             BASE_MODEL,
-            torch_dtype=torch.float16,
+            dtype=dtype,
             device_map="auto",
+            **hub,
         )
         peft_model = PeftModel.from_pretrained(
             base_model,
             str(path),
-            torch_dtype=torch.float16,
         )
         model = peft_model.merge_and_unload()
-        tokenizer = AutoTokenizer.from_pretrained(str(path))
+        tokenizer = AutoTokenizer.from_pretrained(str(path), **hub)
         model_type = "peft"
     else:
         model = AutoModelForCausalLM.from_pretrained(
             str(path),
-            torch_dtype=torch.float16,
+            dtype=dtype,
             device_map="auto",
+            **hub,
         )
-        tokenizer = AutoTokenizer.from_pretrained(str(path))
+        tokenizer = AutoTokenizer.from_pretrained(str(path), **hub)
         model_type = "full"
 
     model.eval()

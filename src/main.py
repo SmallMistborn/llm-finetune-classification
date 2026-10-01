@@ -1,12 +1,30 @@
-from config import SFT_OUTPUT_PEFT
-from model_service import model_service
-from prepare_datasets import load_splits
-from training import run_peft_training
+import argparse
 
-if not SFT_OUTPUT_PEFT.exists():
-    run_peft_training()
+from training import run_full_training, run_peft_training
 
-_train, _val, test = load_splits()
-for example in test:
-    result = model_service.predict(example["movie_name"], example["content"])
-    print(example["grade3"], result["prediction"], example["movie_name"])
+
+def main():
+    parser = argparse.ArgumentParser(description="SFT классификации отзывов Kinopoisk")
+    parser.add_argument("--mode", choices=["peft", "full"], default="full")
+    parser.add_argument("--max-steps", type=int, default=None)
+    parser.add_argument("--epochs", type=float, default=None)
+    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--learning-rate", type=float, default=None)
+    parser.add_argument("--output-dir", type=str, default=None)
+    args = parser.parse_args()
+
+    kwargs = {
+        "max_steps": args.max_steps,
+        "num_train_epochs": args.epochs,
+        "per_device_train_batch_size": args.batch_size,
+        "output_dir": args.output_dir,
+    }
+    if args.learning_rate is not None:
+        kwargs["learning_rate"] = args.learning_rate
+
+    runner = run_peft_training if args.mode == "peft" else run_full_training
+    print(runner(**kwargs))
+
+
+if __name__ == "__main__":
+    main()

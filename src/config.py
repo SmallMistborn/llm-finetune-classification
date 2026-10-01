@@ -17,3 +17,10 @@ SFT_OUTPUT = _resolve_path(os.getenv("SFT_OUTPUT", "./sft_output"))
 SFT_OUTPUT_PEFT = _resolve_path(os.getenv("SFT_OUTPUT_PEFT", "./sft_output_peft"))
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8000"))
+
+HF_TOKEN = os.getenv("HF_TOKEN") or None
+MAX_SEQ_LENGTH = int(os.getenv("MAX_SEQ_LENGTH", "512"))
+EVAL_MAX_SAMPLES = int(os.getenv("EVAL_MAX_SAMPLES", "256"))
+NUM_TRAIN_EPOCHS = float(os.getenv("NUM_TRAIN_EPOCHS", "2"))
+# 0: батчи собирает основной процесс. На CUDA безопаснее, чем fork после .to("cuda").
+DATALOADER_WORKERS = int(os.getenv("DATALOADER_WORKERS", "0"))

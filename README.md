@@ -34,14 +34,18 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
 **Mac / CPU:**
 ```bash
+pip install torch==2.12.0
 pip install -r requirements.txt
 ```
 
-**Linux + NVIDIA GPU:**
+**Linux + NVIDIA GPU (Immers, CUDA):**
 ```bash
 pip install torch==2.12.0 --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements.txt
+python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
+
+`torch` в `requirements.txt` нет: `pip install -r requirements.txt` с PyPI иначе ставит CPU-сборку и затирает CUDA.
 
 ### 1.3. В IDE (PyCharm)
 

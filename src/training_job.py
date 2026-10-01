@@ -34,18 +34,21 @@ class TrainingService:
     def start(
         self,
         mode: str,
-        max_steps: int,
-        per_device_train_batch_size: int,
-        learning_rate: float,
+        max_steps: int | None = None,
+        num_train_epochs: float = 2,
+        per_device_train_batch_size: int = 8,
+        learning_rate: float | None = None,
         output_dir: str | None = None,
     ) -> dict:
         output_path = output_dir or default_output_dir(mode)
         params = {
             "max_steps": max_steps,
+            "num_train_epochs": num_train_epochs,
             "per_device_train_batch_size": per_device_train_batch_size,
-            "learning_rate": learning_rate,
             "output_dir": output_path,
         }
+        if learning_rate is not None:
+            params["learning_rate"] = learning_rate
         with self._lock:
             if self.is_running():
                 raise TrainingAlreadyRunningError("Обучение уже запущено")
