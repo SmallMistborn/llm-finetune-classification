@@ -1,4 +1,5 @@
 MAX_REVIEW_CHARS = 500
+LABELS = ("Bad", "Good", "Neutral")
 
 
 def build_user_content(movie_name: str, review: str) -> str:

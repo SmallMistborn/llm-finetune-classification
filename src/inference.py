@@ -5,10 +5,10 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from config import BASE_MODEL
-from formatting_func import build_prompt
+from formatting_func import LABELS, build_prompt
 
 
-def load_model(model_path, device=None):
+def load_model(model_path: str):
     path = Path(model_path)
 
     if (path / "adapter_config.json").exists():
@@ -38,14 +38,36 @@ def load_model(model_path, device=None):
     return model, tokenizer, model_type
 
 
-def predict(model, tokenizer, movie_name, review, device=None, max_new_tokens=8):
+def _label_token_ids(tokenizer) -> dict[str, list[int]]:
+    return {
+        label: tokenizer.encode(label, add_special_tokens=False) for label in LABELS
+    }
+
+
+def score_labels(model, tokenizer, prompt: str) -> dict[str, float]:
+    """Length-normalized log-probability of each class string after the prompt."""
+    prompt_ids = tokenizer(prompt, add_special_tokens=False, return_tensors="pt")
+    prompt_ids = {k: v.to(model.device) for k, v in prompt_ids.items()}
+    prompt_len = prompt_ids["input_ids"].shape[1]
+    scores = {}
+
+    for label, label_ids in _label_token_ids(tokenizer).items():
+        label_tensor = torch.tensor([label_ids], device=model.device)
+        input_ids = torch.cat([prompt_ids["input_ids"], label_tensor], dim=1)
+        attention_mask = torch.ones_like(input_ids)
+        with torch.no_grad():
+            logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
+        log_probs = torch.log_softmax(
+            logits[0, prompt_len - 1 : prompt_len - 1 + len(label_ids)], dim=-1
+        )
+        token_logp = log_probs[
+            torch.arange(len(label_ids), device=model.device), label_tensor[0]
+        ]
+        scores[label] = float(token_logp.mean().item())
+    return scores
+
+
+def predict(model, tokenizer, movie_name: str, review: str) -> tuple[str, dict[str, float]]:
     prompt = build_prompt(tokenizer, movie_name, review)
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    out = model.generate(
-        **inputs,
-        max_new_tokens=max_new_tokens,
-        do_sample=False,
-        pad_token_id=tokenizer.eos_token_id,
-    )
-    text = tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
-    return text.strip()
+    scores = score_labels(model, tokenizer, prompt)
+    return max(scores, key=scores.get), scores
