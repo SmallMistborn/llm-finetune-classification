@@ -73,11 +73,15 @@ def _sft_config(
 
 
 def _load_base(device: str):
+    if device == "cuda":
+        torch.backends.cuda.enable_flash_sdp(False)
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
+        torch.backends.cuda.enable_math_sdp(True)
     dtype = torch.bfloat16 if device == "cuda" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
         dtype=dtype,
-        attn_implementation="sdpa",
+        attn_implementation="eager",
         **_hub_kwargs(),
     )
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, **_hub_kwargs())
