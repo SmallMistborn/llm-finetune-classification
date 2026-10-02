@@ -24,3 +24,5 @@ EVAL_MAX_SAMPLES = int(os.getenv("EVAL_MAX_SAMPLES", "256"))
 NUM_TRAIN_EPOCHS = float(os.getenv("NUM_TRAIN_EPOCHS", "2"))
 # 0: батчи собирает основной процесс. На CUDA безопаснее, чем fork после .to("cuda").
 DATALOADER_WORKERS = int(os.getenv("DATALOADER_WORKERS", "0"))
+# Если Good выиграл, но от Neutral меньше этого зазора — берём Neutral.
+NEUTRAL_MARGIN = float(os.getenv("NEUTRAL_MARGIN", "0.15"))

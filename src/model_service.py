@@ -3,6 +3,7 @@ from threading import Lock
 import torch
 from sklearn.metrics import classification_report, f1_score
 
+from config import NEUTRAL_MARGIN
 from formatting_func import LABELS
 from get_device import get_device
 from inference import load_model, predict
@@ -57,6 +58,7 @@ class ModelService:
         return {
             "prediction": label,
             "scores": scores,
+            "neutral_margin": NEUTRAL_MARGIN,
             "model_path": self.model_path,
             "model_type": self.model_type,
         }
@@ -85,6 +87,7 @@ class ModelService:
         return {
             "model": self.model_path,
             "model_type": self.model_type,
+            "neutral_margin": NEUTRAL_MARGIN,
             "split": "test",
             "accuracy": correct / n if n else 0.0,
             "f1_macro": float(

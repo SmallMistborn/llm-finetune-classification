@@ -4,7 +4,7 @@ import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from config import BASE_MODEL, HF_TOKEN
+from config import BASE_MODEL, HF_TOKEN, NEUTRAL_MARGIN
 from formatting_func import LABELS, build_prompt
 
 
@@ -82,7 +82,14 @@ def score_labels(model, tokenizer, prompt: str) -> dict[str, float]:
     return scores
 
 
+def pick_label(scores: dict[str, float], margin: float = NEUTRAL_MARGIN) -> str:
+    winner = max(scores, key=scores.get)
+    if winner == "Good" and (scores["Good"] - scores.get("Neutral", float("-inf"))) < margin:
+        return "Neutral"
+    return winner
+
+
 def predict(model, tokenizer, movie_name: str, review: str) -> tuple[str, dict[str, float]]:
     prompt = build_prompt(tokenizer, movie_name, review)
     scores = score_labels(model, tokenizer, prompt)
-    return max(scores, key=scores.get), scores
+    return pick_label(scores), scores
