@@ -1,0 +1,45 @@
+# Git / IDE
+.git
+.gitignore
+.idea
+.vscode
+*.md
+
+# Python
+__pycache__
+**/__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+env
+*.egg-info
+.eggs
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Локальные артефакты (монтируются volumes, в образ не нужны)
+sft_output
+sft_output_peft
+sft_output_full
+.cache
+*.log
+predictions*.json
+evaluation_report.json
+
+# Секреты и окружение (передаются через env_file)
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# macOS
+.DS_Store
+**/.DS_Store
